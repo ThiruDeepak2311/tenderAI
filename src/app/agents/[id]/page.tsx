@@ -1,21 +1,29 @@
 // src/app/agents/[id]/page.tsx
-// One template file that auto-generates a page for each agent.
 
 import { agents, getAgentById, getAgentIndex } from "@/data/agents";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Agent01View from "@/components/Agent01View";
+import Agent02View from "@/components/Agent02View";
+import Agent03View from "@/components/Agent03View";
 import Sidebar from "@/components/Sidebar";
 
 export function generateStaticParams() {
   return agents.map((agent) => ({ id: agent.id }));
 }
 
-export default async function AgentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+function renderAgentView(id: string) {
+  if (id === "rfi-intelligence") return <Agent01View />;
+  if (id === "qualification") return <Agent02View />;
+  if (id === "reference-design") return <Agent03View />;
+  return (
+    <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
+      <p className="text-sm text-slate-500">Agent demo content will go here.</p>
+    </section>
+  );
+}
+
+export default async function AgentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const agent = getAgentById(id);
 
@@ -33,9 +41,7 @@ export default async function AgentPage({
 
       <div className="flex-1">
         <header className="border-b border-slate-800 bg-slate-900/50 px-10 py-4">
-          <Link href="/" className="text-sm text-slate-400 transition hover:text-emerald-400">
-            ← Back to overview
-          </Link>
+          <Link href="/" className="text-sm text-slate-400 transition hover:text-emerald-400">← Back to overview</Link>
         </header>
 
         <main className="px-10 py-10">
@@ -49,36 +55,18 @@ export default async function AgentPage({
                 {agent.number}
               </span>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
-                  {agent.step}
-                </p>
-                <h1 className="mt-1 text-4xl font-bold text-white">
-                  {agent.fullName}
-                </h1>
+                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">{agent.step}</p>
+                <h1 className="mt-1 text-4xl font-bold text-white">{agent.fullName}</h1>
                 <p className="mt-2 text-lg text-slate-300">{agent.tagline}</p>
               </div>
             </div>
 
             <section className="mt-10 rounded-xl border border-slate-800 bg-slate-900 p-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                About this agent
-              </p>
-              <p className="mt-3 leading-relaxed text-slate-200">
-                {agent.description}
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">About this agent</p>
+              <p className="mt-3 leading-relaxed text-slate-200">{agent.description}</p>
             </section>
 
-            <div className="mt-6">
-              {id === "rfi-intelligence" ? (
-                <Agent01View />
-              ) : (
-                <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
-                  <p className="text-sm text-slate-500">
-                    Agent demo content will go here.
-                  </p>
-                </section>
-              )}
-            </div>
+            <div className="mt-6">{renderAgentView(id)}</div>
 
             <nav className="mt-10 flex items-stretch justify-between gap-4 border-t border-slate-800 pt-6">
               {prevAgent ? (
