@@ -1,10 +1,8 @@
 // src/components/HITLPanel.tsx
-// Reusable Human-in-the-Loop approval panel. Shown after an agent completes its run.
-// Allows the reviewer to add a comment and either Approve or Request Revision.
 "use client";
 
-import { useState } from "react";
-import { approveAgent, requestRevision, getAgentRecord, formatRelative } from "@/lib/agentProgress";
+import { useState, useEffect } from "react";
+import { approveAgent, requestRevision, getAgentRecord, formatRelative, type AgentRecord } from "@/lib/agentProgress";
 import Link from "next/link";
 
 type Props = {
@@ -14,7 +12,7 @@ type Props = {
   nextAgentId?: string;
   nextAgentNumber?: string;
   nextAgentName?: string;
-  accentColor?: "emerald" | "blue" | "purple" | "amber"; // matches the agent's identity
+  accentColor?: "emerald" | "blue" | "purple" | "amber";
 };
 
 export default function HITLPanel({
@@ -23,29 +21,36 @@ export default function HITLPanel({
   agentName,
   nextAgentId,
   nextAgentNumber,
-  nextAgentName,
   accentColor = "emerald",
 }: Props) {
   const [note, setNote] = useState("");
   const [showRevisionBox, setShowRevisionBox] = useState(false);
+  const [record, setRecord] = useState<AgentRecord>(() => getAgentRecord(agentId));
 
-  // Re-read on render so state updates after click reflect immediately
-  const record = getAgentRecord(agentId);
-  const isDecided = record.status === "approved" || record.status === "revision_requested";
+  // Re-read record on mount and whenever progress changes globally
+  useEffect(() => {
+    const refresh = () => setRecord(getAgentRecord(agentId));
+    refresh();
+    window.addEventListener("tendering-ai-progress-change", refresh);
+    return () => window.removeEventListener("tendering-ai-progress-change", refresh);
+  }, [agentId]);
 
   const handleApprove = () => {
     approveAgent(agentId, note.trim() || undefined);
     setNote("");
+    setRecord(getAgentRecord(agentId));
   };
 
   const handleRevisionSubmit = () => {
-    if (!note.trim()) return; // require a note for revision
+    if (!note.trim()) return;
     requestRevision(agentId, note.trim());
     setNote("");
     setShowRevisionBox(false);
+    setRecord(getAgentRecord(agentId));
   };
 
-  // Once a decision is made — show the audit trail (read-only)
+  const isDecided = record.status === "approved" || record.status === "revision_requested";
+
   if (isDecided) {
     return (
       <section className={`rounded-xl border ${decidedBorder(record.status)} ${decidedBg(record.status)} p-5`}>
@@ -79,26 +84,37 @@ export default function HITLPanel({
     );
   }
 
-  // Pending review state — show the approval form
+  // Pending review — approval form
+  const headerInRevisionMode = showRevisionBox;
+
   return (
-    <section className={`rounded-xl border ${pendingBorder(accentColor)} ${pendingBg(accentColor)} p-5`}>
+    <section className={`rounded-xl border ${headerInRevisionMode ? "border-red-500/30" : "border-amber-500/30"} bg-gradient-to-br ${headerInRevisionMode ? "from-red-500/5" : "from-amber-500/5"} to-slate-900 p-5`}>
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-400">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
-          Pending Human Review
-        </span>
+        {headerInRevisionMode ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-red-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+            Request Revision
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-400">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
+            Pending Human Review
+          </span>
+        )}
       </div>
       <h3 className="mt-3 text-lg font-bold text-white">
-        Agent {agentNumber} output — awaiting your approval
+        {headerInRevisionMode
+          ? `Send Agent ${agentNumber} output back for revision`
+          : `Agent ${agentNumber} output — awaiting your approval`}
       </h3>
       <p className="mt-1 text-sm text-slate-300">
-        Review the {agentName} output above. Add notes (optional) and approve to continue, or request a revision.
+        {headerInRevisionMode
+          ? `Describe what the ${agentName} agent should rework before re-running.`
+          : `Review the ${agentName} output above. Add notes (optional) and approve to continue, or request a revision.`}
       </p>
 
       <div className="mt-4 rounded-md border border-slate-800 bg-slate-900/50 p-3">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Reviewer</p>
-        </div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Reviewer</p>
         <p className="mt-1 text-sm font-semibold text-white">Deepak Thirukkumaran</p>
         <p className="text-xs text-slate-400">Engineering Lead</p>
       </div>
@@ -163,7 +179,7 @@ export default function HITLPanel({
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            Approve {nextAgentName ? `& Continue to Agent ${nextAgentNumber}` : ""}
+            Approve {nextAgentNumber ? `& Continue to Agent ${nextAgentNumber}` : ""}
           </button>
         </div>
       )}
@@ -199,15 +215,4 @@ function decidedBg(status: string) {
   return status === "approved"
     ? "bg-gradient-to-br from-emerald-500/5 to-slate-900"
     : "bg-gradient-to-br from-red-500/5 to-slate-900";
-}
-function pendingBorder(c: string) {
-  return {
-    emerald: "border-amber-500/30",
-    blue: "border-amber-500/30",
-    purple: "border-amber-500/30",
-    amber: "border-amber-500/30",
-  }[c] || "border-amber-500/30";
-}
-function pendingBg(c: string) {
-  return "bg-gradient-to-br from-amber-500/5 to-slate-900";
 }
