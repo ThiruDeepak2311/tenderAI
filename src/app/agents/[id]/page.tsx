@@ -6,6 +6,9 @@ import { notFound } from "next/navigation";
 import Agent01View from "@/components/Agent01View";
 import Agent02View from "@/components/Agent02View";
 import Agent03View from "@/components/Agent03View";
+import Agent04View from "@/components/Agent04View";
+import Agent05View from "@/components/Agent05View";
+import Agent06View from "@/components/Agent06View";
 import Sidebar from "@/components/Sidebar";
 
 export function generateStaticParams() {
@@ -16,6 +19,9 @@ function renderAgentView(id: string) {
   if (id === "rfi-intelligence") return <Agent01View />;
   if (id === "qualification") return <Agent02View />;
   if (id === "reference-design") return <Agent03View />;
+  if (id === "bom-scope") return <Agent04View />;
+  if (id === "supplier-rfq") return <Agent05View />;
+  if (id === "quote-analysis") return <Agent06View />;
   return (
     <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
       <p className="text-sm text-slate-500">Agent demo content will go here.</p>
