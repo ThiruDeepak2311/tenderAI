@@ -9,6 +9,8 @@ import Agent03View from "@/components/Agent03View";
 import Agent04View from "@/components/Agent04View";
 import Agent05View from "@/components/Agent05View";
 import Agent06View from "@/components/Agent06View";
+import Agent07View from "@/components/Agent07View";
+import Agent08View from "@/components/Agent08View";
 import Sidebar from "@/components/Sidebar";
 
 export function generateStaticParams() {
@@ -22,6 +24,8 @@ function renderAgentView(id: string) {
   if (id === "bom-scope") return <Agent04View />;
   if (id === "supplier-rfq") return <Agent05View />;
   if (id === "quote-analysis") return <Agent06View />;
+  if (id === "technical-response") return <Agent07View />;
+  if (id === "proposal-assembly") return <Agent08View />;
   return (
     <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
       <p className="text-sm text-slate-500">Agent demo content will go here.</p>
