@@ -10,20 +10,22 @@ import { useEffect, useState } from "react";
 type ProgressState = Record<string, { status: AgentStatus }>;
 
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState<ProgressState>({});
 
   useEffect(() => {
+    setMounted(true);
     const refresh = () => setProgress(getProgress() as ProgressState);
     refresh();
     window.addEventListener("tendering-ai-progress-change", refresh);
     return () => window.removeEventListener("tendering-ai-progress-change", refresh);
   }, []);
 
-  const completedCount = Object.values(progress).filter((r) => r.status === "approved").length;
+  const completedCount = mounted ? Object.values(progress).filter((r) => r.status === "approved").length : 0;
   const progressPct = (completedCount / agents.length) * 100;
 
-  const nextAgent = agents.find((a) => progress[a.id]?.status !== "approved") || agents[0];
-  const allDone = completedCount === agents.length;
+  const nextAgent = mounted ? (agents.find((a) => progress[a.id]?.status !== "approved") || agents[0]) : agents[0];
+  const allDone = mounted && completedCount === agents.length;
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -62,7 +64,7 @@ export default function Home() {
           <section className="mt-12">
             <div className="mb-4 flex items-baseline justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">The 8-Agent Pipeline</p>
-              {completedCount > 0 && (
+              {mounted && completedCount > 0 && (
                 <p className="text-xs text-slate-500">
                   <span className="font-bold text-emerald-600">{completedCount}</span> of {agents.length} agents approved
                 </p>
@@ -72,7 +74,7 @@ export default function Home() {
             <div className="rounded-xl border border-slate-200 bg-white p-4">
               <div className="flex items-stretch gap-1 overflow-x-auto pb-2">
                 {agents.map((agent, idx) => {
-                  const status = progress[agent.id]?.status;
+                  const status = mounted ? progress[agent.id]?.status : undefined;
                   const isApproved = status === "approved";
                   const isInReview = status === "in_review";
                   const isRevision = status === "revision_requested";
@@ -113,7 +115,7 @@ export default function Home() {
                 })}
               </div>
 
-              {completedCount > 0 && (
+              {mounted && completedCount > 0 && (
                 <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-100">
                   <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${progressPct}%` }} />
                 </div>
@@ -122,7 +124,17 @@ export default function Home() {
           </section>
 
           <section className="mt-10 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-white p-8 text-center">
-            {allDone ? (
+            {!mounted ? (
+              <>
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">Ready When You Are</p>
+                <h3 className="mt-2 text-2xl font-bold text-slate-900">Start the Demo</h3>
+                <p className="mt-2 text-sm text-slate-700">Walk through the full pipeline, beginning with Agent 01 — RFI Intelligence.</p>
+                <Link href={`/agents/${agents[0].id}`} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-700">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  Start Demo
+                </Link>
+              </>
+            ) : allDone ? (
               <>
                 <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">Pipeline Complete</p>
                 <h3 className="mt-2 text-2xl font-bold text-slate-900">All 8 agents have been approved</h3>

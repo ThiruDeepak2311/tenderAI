@@ -1,6 +1,4 @@
 // src/components/MultiReviewerPanel.tsx
-// Multi-reviewer HITL panel for Live Agent 02 — 4 reviewer slots (Tech, Commercial, Legal, Regional)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -25,14 +23,28 @@ type Props = {
 };
 
 export default function MultiReviewerPanel({ onOpenAssignChatbot }: Props) {
-  const [state, setState] = useState<MultiReviewerState>(() => getMultiReviewerState());
+  const [mounted, setMounted] = useState(false);
+  const [state, setState] = useState<MultiReviewerState | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     const refresh = () => setState(getMultiReviewerState());
     refresh();
     window.addEventListener(MULTI_REVIEWER_CHANGE_EVENT, refresh);
     return () => window.removeEventListener(MULTI_REVIEWER_CHANGE_EVENT, refresh);
   }, []);
+
+  // Don't render anything until mounted (avoids hydration mismatch)
+  if (!mounted || !state) {
+    return (
+      <section className="rounded-xl border-2 border-slate-300 bg-white p-6">
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-600">
+          Multi-Reviewer Human-in-the-Loop
+        </p>
+        <p className="mt-2 text-sm text-slate-500">Loading reviewer state…</p>
+      </section>
+    );
+  }
 
   const approvedCount = getApprovedCount(state);
   const assignedCount = getAssignedCount(state);
@@ -50,7 +62,6 @@ export default function MultiReviewerPanel({ onOpenAssignChatbot }: Props) {
 
   return (
     <section className={`rounded-xl border-2 ${rollupBorder(rollupStatus.tone)} ${rollupBg(rollupStatus.tone)} p-6`}>
-      {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className={`text-xs font-bold uppercase tracking-widest ${rollupText(rollupStatus.tone)}`}>
@@ -97,7 +108,6 @@ export default function MultiReviewerPanel({ onOpenAssignChatbot }: Props) {
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="mt-5">
         <div className="h-2 overflow-hidden rounded-full bg-slate-100">
           <div
@@ -107,14 +117,12 @@ export default function MultiReviewerPanel({ onOpenAssignChatbot }: Props) {
         </div>
       </div>
 
-      {/* Reviewer cards */}
       <div className="mt-6 grid grid-cols-2 gap-4">
         {roles.map((role) => (
           <ReviewerCard key={role} role={role} slot={state[role]} />
         ))}
       </div>
 
-      {/* Final approval banner */}
       {allApproved && (
         <div className="mt-5 rounded-lg border border-emerald-300 bg-white p-4">
           <div className="flex items-center gap-3">
@@ -155,7 +163,6 @@ function ReviewerCard({ role, slot }: { role: ReviewerRole; slot: MultiReviewerS
 
   return (
     <div className={`rounded-lg border ${slot.status === "approved" ? "border-emerald-300 bg-emerald-50" : slot.status === "revision_requested" ? "border-red-300 bg-red-50" : slot.status === "pending" ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"} p-4`}>
-      {/* Role + status */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -172,7 +179,6 @@ function ReviewerCard({ role, slot }: { role: ReviewerRole; slot: MultiReviewerS
         <StatusBadge status={slot.status} />
       </div>
 
-      {/* Assignment info or unassigned state */}
       {slot.status === "unassigned" && (
         <div className="mt-3 rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-center">
           <p className="text-xs italic text-slate-500">No reviewer assigned yet</p>
@@ -187,7 +193,6 @@ function ReviewerCard({ role, slot }: { role: ReviewerRole; slot: MultiReviewerS
         </div>
       )}
 
-      {/* Decision details (approved or revision) */}
       {(slot.status === "approved" || slot.status === "revision_requested") && (
         <div className="mt-3 space-y-2">
           <p className="text-[10px] text-slate-500">{formatRelative(slot.decidedAt)}</p>
@@ -200,7 +205,6 @@ function ReviewerCard({ role, slot }: { role: ReviewerRole; slot: MultiReviewerS
         </div>
       )}
 
-      {/* Pending review — actions */}
       {slot.status === "pending" && (
         <div className="mt-3 space-y-2">
           {!showRevisionBox && (

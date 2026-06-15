@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import MultiReviewerPanel from "@/components/MultiReviewerPanel";
+import InitiateReviewChatbot from "@/components/InitiateReviewChatbot";
 
 type Verdict = {
   decision: string;
@@ -38,11 +39,10 @@ export default function Agent02LiveView() {
   const [error, setError] = useState<string | null>(null);
   const [elapsedMs, setElapsedMs] = useState<number | null>(null);
   const [modelUsed, setModelUsed] = useState<string | null>(null);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
-  // Placeholder for chatbot — will be wired in Step 2
-  const handleOpenAssignChatbot = () => {
-    alert("Initiate Review chatbot coming next — Step 2.\n\nFor now, this is where the chatbot will open to let you assign Tech / Commercial / Legal / Regional reviewers from your team.");
-  };
+  const handleOpenAssignChatbot = () => setChatbotOpen(true);
+  const handleCloseChatbot = () => setChatbotOpen(false);
 
   const handleRun = async () => {
     setLoading(true);
@@ -260,10 +260,12 @@ export default function Agent02LiveView() {
             </section>
           )}
 
-          {/* Multi-Reviewer HITL Panel — replaces the old single-reviewer panel */}
           <MultiReviewerPanel onOpenAssignChatbot={handleOpenAssignChatbot} />
         </>
       )}
+
+      {/* Chatbot modal — controlled by chatbotOpen state */}
+      <InitiateReviewChatbot open={chatbotOpen} onClose={handleCloseChatbot} />
     </div>
   );
 }

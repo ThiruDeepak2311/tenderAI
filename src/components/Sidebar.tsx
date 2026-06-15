@@ -7,17 +7,22 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Sidebar({ activeId }: { activeId?: string }) {
+  const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState<Record<string, { status: AgentStatus }>>({});
+  const [approvedCount, setApprovedCount] = useState(0);
 
   useEffect(() => {
-    const refresh = () => setProgress(getProgress() as Record<string, { status: AgentStatus }>);
+    setMounted(true);
+    const refresh = () => {
+      setProgress(getProgress() as Record<string, { status: AgentStatus }>);
+      setApprovedCount(getApprovedCount());
+    };
     refresh();
     window.addEventListener("tendering-ai-progress-change", refresh);
     return () => window.removeEventListener("tendering-ai-progress-change", refresh);
   }, []);
 
-  const approvedCount = getApprovedCount();
-  const hasAnyActivity = Object.keys(progress).length > 0;
+  const hasAnyActivity = mounted && Object.keys(progress).length > 0;
 
   return (
     <aside className="w-80 shrink-0 border-r border-slate-200 bg-white p-6">
@@ -35,13 +40,13 @@ export default function Sidebar({ activeId }: { activeId?: string }) {
           The 8-Agent Pipeline
         </p>
         <span className="text-[10px] font-bold text-emerald-600">
-          {approvedCount}/8 Approved
+          {mounted ? approvedCount : 0}/8 Approved
         </span>
       </div>
 
       <nav className="space-y-2">
         {agents.map((agent) => {
-          const status = (progress[agent.id]?.status as AgentStatus) || "pending";
+          const status = mounted ? ((progress[agent.id]?.status as AgentStatus) || "pending") : "pending";
           const isActive = activeId === agent.id;
 
           return (
@@ -61,7 +66,7 @@ export default function Sidebar({ activeId }: { activeId?: string }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p className="truncate text-sm font-semibold text-slate-900">{agent.name}</p>
-                      {status !== "pending" && (
+                      {mounted && status !== "pending" && (
                         <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${pillStyle(status)}`}>
                           {statusLabel(status)}
                         </span>
