@@ -1,5 +1,4 @@
 // src/components/Sidebar.tsx
-// HITL-aware sidebar. Each agent shows its current status badge.
 "use client";
 
 import { agents } from "@/data/agents";
@@ -21,21 +20,21 @@ export default function Sidebar({ activeId }: { activeId?: string }) {
   const hasAnyActivity = Object.keys(progress).length > 0;
 
   return (
-    <aside className="w-80 shrink-0 border-r border-slate-800 bg-slate-900/50 p-6">
+    <aside className="w-80 shrink-0 border-r border-slate-200 bg-white p-6">
       <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600">
           Tendering AI
         </p>
-        <h1 className="mt-1 text-lg font-bold leading-tight text-white">
+        <h1 className="mt-1 text-lg font-bold leading-tight text-slate-900">
           Oil & Gas Bid Intelligence Platform
         </h1>
       </div>
 
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
           The 8-Agent Pipeline
         </p>
-        <span className="text-[10px] font-bold text-emerald-400">
+        <span className="text-[10px] font-bold text-emerald-600">
           {approvedCount}/8 Approved
         </span>
       </div>
@@ -46,32 +45,56 @@ export default function Sidebar({ activeId }: { activeId?: string }) {
           const isActive = activeId === agent.id;
 
           return (
-            <Link
-              key={agent.id}
-              href={`/agents/${agent.id}`}
-              className={`group block rounded-lg border p-3 transition ${
-                isActive
-                  ? "border-emerald-500/60 bg-emerald-500/5"
-                  : "border-slate-800 bg-slate-900 hover:border-emerald-500/50 hover:bg-slate-800"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${badgeStyle(status, isActive)}`}>
-                  {iconForStatus(status, agent.number)}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-white">{agent.name}</p>
-                    {status !== "pending" && (
-                      <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${pillStyle(status)}`}>
-                        {statusLabel(status)}
-                      </span>
-                    )}
+            <div key={agent.id}>
+              <Link
+                href={`/agents/${agent.id}`}
+                className={`group block rounded-lg border p-3 transition ${
+                  isActive
+                    ? "border-emerald-500/60 bg-emerald-50"
+                    : "border-slate-200 bg-white hover:border-emerald-500/50 hover:bg-slate-50"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-bold ${badgeStyle(status, isActive)}`}>
+                    {iconForStatus(status, agent.number)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-semibold text-slate-900">{agent.name}</p>
+                      {status !== "pending" && (
+                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${pillStyle(status)}`}>
+                          {statusLabel(status)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">{agent.tagline}</p>
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-slate-400">{agent.tagline}</p>
                 </div>
-              </div>
-            </Link>
+              </Link>
+
+              {agent.id === "qualification" && (
+                <Link
+                  href="/agents/qualification/live"
+                  className={`mt-1 block rounded-lg border-2 border-dashed p-2.5 transition ${
+                    activeId === "qualification-live"
+                      ? "border-emerald-500/70 bg-emerald-50"
+                      : "border-emerald-500/40 bg-emerald-50/40 hover:border-emerald-500/70 hover:bg-emerald-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold uppercase tracking-wide text-emerald-700">
+                        Live · Real LLM
+                      </p>
+                      <p className="text-[10px] text-slate-500">Gemini-powered Agent 02</p>
+                    </div>
+                  </div>
+                </Link>
+              )}
+            </div>
           );
         })}
       </nav>
@@ -83,7 +106,7 @@ export default function Sidebar({ activeId }: { activeId?: string }) {
               resetProgress();
             }
           }}
-          className="mt-6 w-full rounded-md border border-slate-800 px-3 py-2 text-xs font-semibold text-slate-400 transition hover:border-amber-500/40 hover:text-amber-400"
+          className="mt-6 w-full rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-amber-500/40 hover:text-amber-600"
         >
           ↺ Reset Demo
         </button>
@@ -111,17 +134,17 @@ function iconForStatus(status: AgentStatus, fallback: string) {
 }
 
 function badgeStyle(status: AgentStatus, isActive: boolean) {
-  if (status === "approved") return "bg-emerald-500/20 text-emerald-400";
-  if (status === "in_review") return "bg-amber-500/20 text-amber-400";
-  if (status === "revision_requested") return "bg-red-500/20 text-red-400";
-  return isActive ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-emerald-400";
+  if (status === "approved") return "bg-emerald-100 text-emerald-700";
+  if (status === "in_review") return "bg-amber-100 text-amber-700";
+  if (status === "revision_requested") return "bg-red-100 text-red-700";
+  return isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-emerald-700";
 }
 
 function pillStyle(status: AgentStatus) {
-  if (status === "approved") return "bg-emerald-500/15 text-emerald-400";
-  if (status === "in_review") return "bg-amber-500/15 text-amber-400";
-  if (status === "revision_requested") return "bg-red-500/15 text-red-400";
-  return "bg-slate-700 text-slate-300";
+  if (status === "approved") return "bg-emerald-100 text-emerald-700";
+  if (status === "in_review") return "bg-amber-100 text-amber-700";
+  if (status === "revision_requested") return "bg-red-100 text-red-700";
+  return "bg-slate-100 text-slate-600";
 }
 
 function statusLabel(status: AgentStatus) {

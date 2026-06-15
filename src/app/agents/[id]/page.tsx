@@ -27,7 +27,7 @@ function renderAgentView(id: string) {
   if (id === "technical-response") return <Agent07View />;
   if (id === "proposal-assembly") return <Agent08View />;
   return (
-    <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/50 p-10 text-center">
+    <section className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
       <p className="text-sm text-slate-500">Agent demo content will go here.</p>
     </section>
   );
@@ -46,12 +46,12 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const nextAgent = index < agents.length - 1 ? agents[index + 1] : null;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar activeId={id} />
 
       <div className="flex-1">
-        <header className="border-b border-slate-800 bg-slate-900/50 px-10 py-4">
-          <Link href="/" className="text-sm text-slate-400 transition hover:text-emerald-400">← Back to overview</Link>
+        <header className="border-b border-slate-200 bg-white px-10 py-4">
+          <Link href="/" className="text-sm text-slate-600 transition hover:text-emerald-600">← Back to overview</Link>
         </header>
 
         <main className="px-10 py-10">
@@ -61,45 +61,45 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             </p>
 
             <div className="flex items-start gap-5">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-xl font-bold text-emerald-400">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-xl font-bold text-emerald-700">
                 {agent.number}
               </span>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">{agent.step}</p>
-                <h1 className="mt-1 text-4xl font-bold text-white">{agent.fullName}</h1>
-                <p className="mt-2 text-lg text-slate-300">{agent.tagline}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700">{agent.step}</p>
+                <h1 className="mt-1 text-4xl font-bold text-slate-900">{agent.fullName}</h1>
+                <p className="mt-2 text-lg text-slate-700">{agent.tagline}</p>
               </div>
             </div>
 
-            <section className="mt-10 rounded-xl border border-slate-800 bg-slate-900 p-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">About this agent</p>
-              <p className="mt-3 leading-relaxed text-slate-200">{agent.description}</p>
+            <section className="mt-10 rounded-xl border border-slate-200 bg-white p-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">About this agent</p>
+              <p className="mt-3 leading-relaxed text-slate-800">{agent.description}</p>
             </section>
 
             <div className="mt-6">{renderAgentView(id)}</div>
 
-            <nav className="mt-10 flex items-stretch justify-between gap-4 border-t border-slate-800 pt-6">
+            <nav className="mt-10 flex items-stretch justify-between gap-4 border-t border-slate-200 pt-6">
               {prevAgent ? (
-                <Link href={`/agents/${prevAgent.id}`} className="group flex flex-1 flex-col rounded-lg border border-slate-800 bg-slate-900 p-4 transition hover:border-emerald-500/50 hover:bg-slate-800">
-                  <span className="text-xs text-slate-500 group-hover:text-emerald-400">← Previous · Agent {prevAgent.number}</span>
-                  <span className="mt-1 text-sm font-semibold text-white">{prevAgent.name}</span>
+                <Link href={`/agents/${prevAgent.id}`} className="group flex flex-1 flex-col rounded-lg border border-slate-200 bg-white p-4 transition hover:border-emerald-500/50 hover:bg-slate-50">
+                  <span className="text-xs text-slate-500 group-hover:text-emerald-700">← Previous · Agent {prevAgent.number}</span>
+                  <span className="mt-1 text-sm font-semibold text-slate-900">{prevAgent.name}</span>
                 </Link>
               ) : (
-                <div className="flex flex-1 flex-col rounded-lg border border-slate-800/50 bg-slate-900/30 p-4 opacity-40">
-                  <span className="text-xs text-slate-600">← Previous</span>
-                  <span className="mt-1 text-sm font-semibold text-slate-600">Start of pipeline</span>
+                <div className="flex flex-1 flex-col rounded-lg border border-slate-200 bg-slate-50 p-4 opacity-50">
+                  <span className="text-xs text-slate-400">← Previous</span>
+                  <span className="mt-1 text-sm font-semibold text-slate-400">Start of pipeline</span>
                 </div>
               )}
 
               {nextAgent ? (
-                <Link href={`/agents/${nextAgent.id}`} className="group flex flex-1 flex-col rounded-lg border border-slate-800 bg-slate-900 p-4 text-right transition hover:border-emerald-500/50 hover:bg-slate-800">
-                  <span className="text-xs text-slate-500 group-hover:text-emerald-400">Next · Agent {nextAgent.number} →</span>
-                  <span className="mt-1 text-sm font-semibold text-white">{nextAgent.name}</span>
+                <Link href={`/agents/${nextAgent.id}`} className="group flex flex-1 flex-col rounded-lg border border-slate-200 bg-white p-4 text-right transition hover:border-emerald-500/50 hover:bg-slate-50">
+                  <span className="text-xs text-slate-500 group-hover:text-emerald-700">Next · Agent {nextAgent.number} →</span>
+                  <span className="mt-1 text-sm font-semibold text-slate-900">{nextAgent.name}</span>
                 </Link>
               ) : (
-                <div className="flex flex-1 flex-col rounded-lg border border-slate-800/50 bg-slate-900/30 p-4 text-right opacity-40">
-                  <span className="text-xs text-slate-600">Next →</span>
-                  <span className="mt-1 text-sm font-semibold text-slate-600">End of pipeline</span>
+                <div className="flex flex-1 flex-col rounded-lg border border-slate-200 bg-slate-50 p-4 text-right opacity-50">
+                  <span className="text-xs text-slate-400">Next →</span>
+                  <span className="mt-1 text-sm font-semibold text-slate-400">End of pipeline</span>
                 </div>
               )}
             </nav>
